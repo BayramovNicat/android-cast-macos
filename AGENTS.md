@@ -20,6 +20,7 @@ This document provides architecture context, design decisions, and strict guidel
 - **[`engine.py`](engine.py)**: Constructs optimized `scrcpy` arguments and manages the streaming subprocess.
 - **[`config.py`](config.py)**: Streaming profile definitions (Battery Saver, Balanced, Ultra Performance) and `.env` loader.
 - **[`build_app.py`](build_app.py)**: Generates high-res macOS `.icns` icons, bundles `Android Cast.app`, code-signs with ad-hoc identity, and installs to `/Applications`.
+- **[`launcher.sh`](launcher.sh)**: Standalone shell script bundled into the application to launch scrcpy with auto-unlock.
 - **[`cast.sh`](cast.sh)**: Shell wrapper to invoke `main.py` directly from the terminal.
 - **[`.env`](.env) / [`.env.example`](.env.example)**: Stores local credentials (`ANDROID_PIN`). `.env` is git-ignored.
 

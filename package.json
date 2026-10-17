@@ -12,7 +12,7 @@
     "build": "python3 build_app.py",
     "devices": "adb devices",
     "setup": "python3 -m pip install -r requirements.txt && cp -n .env.example .env || true",
-    "check": "python3 -m py_compile main.py config.py device.py engine.py build_app.py"
+    "check": "python3 -m py_compile main.py config.py device.py engine.py build_app.py && bash -n launcher.sh cast.sh"
   },
   "keywords": [
     "android",

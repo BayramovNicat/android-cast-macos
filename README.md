@@ -107,5 +107,6 @@ npm run check            # Verify Python syntax
 - **[`engine.py`](engine.py)** - Constructs optimized `scrcpy` arguments and manages the streaming process.
 - **[`config.py`](config.py)** - Streaming profiles (Battery, Balanced, Performance) and `.env` loader.
 - **[`build_app.py`](build_app.py)** - Automates bundling, icon generation, code-signing, and installation to `/Applications`.
+- **[`launcher.sh`](launcher.sh)** - Standalone shell launcher bundled into `Android Cast.app`.
 - **[`cast.sh`](cast.sh)** - Convenient terminal wrapper for `./main.py`.
-- **[`.env`](.env)** - Local configuration for your Android credentials (git-ignored).
+- **[`.env`](.env) / [`.env.example`](.env.example)** - Local configuration for your Android credentials.
