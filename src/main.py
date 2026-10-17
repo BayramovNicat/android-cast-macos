@@ -62,6 +62,7 @@ def main():
     parser.add_argument("--ip", type=str, help="Specific phone IP:Port to connect")
     parser.add_argument("--pin", type=str, help="PIN or password to automatically unlock the phone")
     parser.add_argument("--no-unlock", action="store_true", help="Skip automatic lockscreen unlocking")
+    parser.add_argument("--no-audio", action="store_true", help="Disable audio forwarding to Mac")
     args = parser.parse_args()
 
     # Determine target device
@@ -115,6 +116,7 @@ def main():
         profile_name=profile,
         override_control=override_control,
         override_screen_off=override_screen_off,
+        override_audio=False if args.no_audio else None,
     )
     sys.exit(exit_code)
 

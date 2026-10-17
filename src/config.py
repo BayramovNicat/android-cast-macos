@@ -54,12 +54,14 @@ class StreamConfig:
     control: bool
     audio: bool
     render_driver: str
+    audio_codec: str = "opus"
+    audio_bit_rate: str = "128K"
 
 # Pre-tuned profiles optimized for Android and Mac
 PROFILES: dict[str, StreamConfig] = {
     "battery": StreamConfig(
         name="Battery Saver",
-        description="Physical phone screen turned OFF, hardware H.265, 60 FPS, lowest battery draw (~70% savings)",
+        description="Physical phone screen turned OFF, hardware H.265, 60 FPS, Opus audio, lowest battery draw (~70% savings)",
         video_codec="h265",
         bit_rate="2.5M",
         max_size=1200,
@@ -69,12 +71,14 @@ PROFILES: dict[str, StreamConfig] = {
         power_off_on_close=True,
         stay_awake=True,
         control=True,
-        audio=False,
+        audio=True,
         render_driver="metal",
+        audio_codec="opus",
+        audio_bit_rate="128K",
     ),
     "balanced": StreamConfig(
         name="Balanced (Default)",
-        description="Smooth 90 Hz native display, hardware H.265, Metal VSync, phone screen off",
+        description="Smooth 90 Hz native display, hardware H.265, Metal VSync, phone screen off, low-latency Opus audio",
         video_codec="h265",
         bit_rate="4M",
         max_size=1200,
@@ -84,12 +88,14 @@ PROFILES: dict[str, StreamConfig] = {
         power_off_on_close=True,
         stay_awake=True,
         control=True,
-        audio=False,
+        audio=True,
         render_driver="metal",
+        audio_codec="opus",
+        audio_bit_rate="128K",
     ),
     "performance": StreamConfig(
         name="Ultra Performance",
-        description="Uncapped 90 Hz, high bitrate, phone screen stays illuminated",
+        description="Uncapped 90 Hz, high bitrate, Opus audio, phone screen stays illuminated",
         video_codec="h265",
         bit_rate="6M",
         max_size=1600,
@@ -99,8 +105,10 @@ PROFILES: dict[str, StreamConfig] = {
         power_off_on_close=False,
         stay_awake=True,
         control=True,
-        audio=False,
+        audio=True,
         render_driver="metal",
+        audio_codec="opus",
+        audio_bit_rate="128K",
     ),
 }
 

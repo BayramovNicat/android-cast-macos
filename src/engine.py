@@ -66,7 +66,10 @@ def build_scrcpy_command(
         cmd.append("--power-off-on-close")
 
     # Audio forwarding
-    if not config.audio:
+    if config.audio:
+        cmd.append(f"--audio-codec={config.audio_codec}")
+        cmd.append(f"--audio-bit-rate={config.audio_bit_rate}")
+    else:
         cmd.append("--no-audio")
 
     return cmd
@@ -76,6 +79,7 @@ def launch_stream(
     profile_name: str = DEFAULT_PROFILE,
     override_control: bool | None = None,
     override_screen_off: bool | None = None,
+    override_audio: bool | None = None,
 ) -> int:
     """Launches the screen mirror stream with the specified profile."""
     scrcpy_path = find_scrcpy()
@@ -92,6 +96,8 @@ def launch_stream(
         overrides["control"] = override_control
     if override_screen_off is not None:
         overrides["turn_screen_off"] = override_screen_off
+    if override_audio is not None:
+        overrides["audio"] = override_audio
     if overrides:
         from dataclasses import replace
         config = replace(base_config, **overrides)
@@ -100,6 +106,7 @@ def launch_stream(
     
     print(f"\n🚀 Launching Android Cast [{config.name}]")
     print(f"📱 Target Device : {device_serial}")
+    print(f"🔊 Audio Forward : {'Enabled (' + config.audio_codec.upper() + ' ' + config.audio_bit_rate + ')' if config.audio else 'Disabled'}")
     print(f"🔋 Screen-Off    : {'Enabled (~70% battery savings)' if config.turn_screen_off else 'Disabled'}")
     print(f"🎮 Interaction   : {'Full Control (Clicking & Typing)' if config.control else 'View-Only'}")
     print(f"🖥️ Render Driver : Apple Metal (Hardware VSync)")

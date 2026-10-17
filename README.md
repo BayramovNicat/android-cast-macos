@@ -17,8 +17,9 @@ A high-performance, battery-optimized tool to mirror and control your Android ph
   - Fluid high refresh rate display matching (up to 90/120 Hz).
 - **🚀 Hardware H.265 / HEVC**:
   - Encoded directly by your phone's hardware chip at an optimized 2.5–4 Mbps bitrate.
-- **🎧 Jitter-Free Audio Decoupling**:
-  - Audio sync packet queueing is disabled by default, preventing video freezes when your phone loads web pages.
+- **🔊 Wireless Low-Latency Audio Forwarding**:
+  - Automatically captures and streams your phone's audio to your Mac using high-fidelity **Opus** audio encoding.
+  - Silent mode available via `--no-audio` flag.
 
 ---
 
@@ -70,6 +71,7 @@ Open **Android Cast** (`Cmd + Space` &rarr; `Android Cast`). The app automatical
 ./cast.sh --view-only   # Read-only presentation mode (clicks disabled)
 ./cast.sh --pin 1234    # Override PIN to unlock
 ./cast.sh --no-unlock   # Skip auto-unlocking
+./cast.sh --no-audio    # Disable audio forwarding
 ./cast.sh --ip 192.168.0.3:40957 # Connect to specific IP:Port
 ```
 

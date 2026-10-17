@@ -9,6 +9,7 @@ This document provides architecture context, design decisions, and strict guidel
 **Android Cast** is a battery-optimized, high-performance tool for macOS to wirelessly mirror and control Android devices using:
 - **scrcpy** with Apple Metal GPU VSync (`--render-driver=metal`)
 - **Hardware H.265 / HEVC** video encoding
+- **Low-latency Opus audio forwarding** (`--audio-codec=opus`)
 - **ADB over Wi-Fi** with automatic lock screen detection and unlocking
 
 ---

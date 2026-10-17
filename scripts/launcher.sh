@@ -96,7 +96,7 @@ fi
 # 3. Physical phone screen OFF while streaming (-S) -> ~70% battery savings
 # 4. Turn off phone screen when app closes (--power-off-on-close)
 # 5. Native 90Hz fluidity
-# 6. Decoupled audio (--no-audio) to eliminate jitter
+# 6. High-fidelity low-latency Opus audio forwarding
 exec "$DIR/AndroidCastEngine" \
     -s "$DEVICE" \
     --window-title="Android Cast" \
@@ -107,5 +107,6 @@ exec "$DIR/AndroidCastEngine" \
     --video-buffer=20 \
     --turn-screen-off \
     --power-off-on-close \
-    --no-audio \
+    --audio-codec=opus \
+    --audio-bit-rate=128K \
     --stay-awake "$@"
