@@ -1,0 +1,27 @@
+{
+  "name": "android-cast-macos",
+  "version": "2.0.0",
+  "description": "High-performance, battery-optimized Android screen mirror & control for macOS over Wi-Fi with Apple Metal GPU and auto-unlock",
+  "license": "MIT",
+  "scripts": {
+    "start": "./cast.sh",
+    "cast": "python3 main.py",
+    "cast:battery": "./cast.sh --battery",
+    "cast:performance": "./cast.sh --performance",
+    "cast:view": "./cast.sh --view-only",
+    "build": "python3 build_app.py",
+    "devices": "adb devices",
+    "setup": "python3 -m pip install -r requirements.txt && cp -n .env.example .env || true",
+    "check": "python3 -m py_compile main.py config.py device.py engine.py build_app.py"
+  },
+  "keywords": [
+    "android",
+    "scrcpy",
+    "screen-mirroring",
+    "macos",
+    "metal",
+    "apple-silicon",
+    "wireless-debugging",
+    "adb"
+  ]
+}

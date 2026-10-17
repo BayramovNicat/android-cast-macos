@@ -1,0 +1,59 @@
+# ==========================================
+# Secrets & Environment Variables
+# ==========================================
+.env
+.env.*
+*.env
+!*.env.example
+
+# ==========================================
+# Python & Bytecode
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================================
+# macOS System & Build Artifacts
+# ==========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+*.app
+*.app/
+*.dSYM/
+*.dmg
+*.iconset/
+
+# ==========================================
+# IDEs & Editors
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ==========================================
+# Node.js
+# ==========================================
+node_modules/
+package-lock.json
+npm-debug.log*
