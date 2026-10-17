@@ -6,22 +6,25 @@ import sys
 from config import PROFILES, DEFAULT_PROFILE, get_android_pin
 from device import (
     get_preferred_wireless_device,
-    get_connected_devices,
     connect_device,
     is_device_locked,
     unlock_device,
 )
 from engine import launch_stream
 
-def print_banner():
-    print("""
+def print_banner(device: str | None = None):
+    status = ""
+    if device:
+        lock_str = "🔒 Locked (Auto-unlock ready)" if is_device_locked(device) else "🔓 Unlocked"
+        status = f"   Device: {device} | Status: {lock_str}\n"
+    print(f"""
 ======================================================================
        📱 Android Cast - High-Performance Wi-Fi Screen Mirror
 ======================================================================
-""")
+{status}""")
 
-def prompt_interactive_menu():
-    print_banner()
+def prompt_interactive_menu(device: str | None = None) -> tuple[str, bool, bool]:
+    print_banner(device)
     print("Choose streaming mode:")
     print("  [1] Balanced Mode (Recommended: Native 90Hz, Screen-Off battery saving)")
     print("  [2] Maximum Battery Saver (60 FPS, 2.5 Mbps, ~75% less phone power)")
@@ -63,10 +66,7 @@ def main():
         connect_device(args.ip)
         device = args.ip
     else:
-        device = get_preferred_wireless_device()
-
-    if not device:
-        print("🔍 Searching for paired phone over Wi-Fi...")
+        print("🔍 Discovering paired phone over Wi-Fi...")
         device = get_preferred_wireless_device(retries=3)
 
     if not device:
@@ -86,7 +86,7 @@ def main():
     elif args.performance:
         profile = "performance"
     elif not any([args.battery, args.performance, args.view_only, args.screen_on, args.ip, args.pin]):
-        profile, ctrl, scr_off = prompt_interactive_menu()
+        profile, ctrl, scr_off = prompt_interactive_menu(device)
         override_control = ctrl
         override_screen_off = scr_off
 

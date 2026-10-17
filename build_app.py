@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from PIL import Image, ImageDraw
 
@@ -16,65 +17,64 @@ RESOURCES_DIR = CONTENTS_DIR / "Resources"
 def generate_icons():
     """Generate high-resolution macOS ICNS and PNG assets."""
     RESOURCES_DIR.mkdir(parents=True, exist_ok=True)
-    iconset_dir = Path("/tmp/AndroidCast.iconset")
-    iconset_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(suffix=".iconset", prefix="AndroidCast_") as temp_dir:
+        iconset_dir = Path(temp_dir)
 
-    size = 1024
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        size = 1024
+        img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
 
-    # Squircle mask
-    mask = Image.new("L", (size, size), 0)
-    mask_draw = ImageDraw.Draw(mask)
-    mask_draw.rounded_rectangle([(32, 32), (size - 32, size - 32)], radius=224, fill=255)
+        # Squircle mask
+        mask = Image.new("L", (size, size), 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.rounded_rectangle([(32, 32), (size - 32, size - 32)], radius=224, fill=255)
 
-    # Modern gradient background (Deep Blue to Electric Violet)
-    grad = Image.new("RGBA", (size, size))
-    for y in range(size):
-        ratio = y / size
-        r_val = int(24 * (1 - ratio) + 99 * ratio)
-        g_val = int(72 * (1 - ratio) + 102 * ratio)
-        b_val = int(216 * (1 - ratio) + 241 * ratio)
-        for x in range(size):
-            grad.putpixel((x, y), (r_val, g_val, b_val, 255))
+        # Modern gradient background (Deep Blue to Electric Violet)
+        grad = Image.new("RGBA", (size, size))
+        for y in range(size):
+            ratio = y / size
+            r_val = int(24 * (1 - ratio) + 99 * ratio)
+            g_val = int(72 * (1 - ratio) + 102 * ratio)
+            b_val = int(216 * (1 - ratio) + 241 * ratio)
+            for x in range(size):
+                grad.putpixel((x, y), (r_val, g_val, b_val, 255))
 
-    img.paste(grad, (0, 0), mask)
-    draw = ImageDraw.Draw(img)
+        img.paste(grad, (0, 0), mask)
+        draw = ImageDraw.Draw(img)
 
-    # Mac monitor illustration
-    m_left, m_top, m_right, m_bottom = 260, 270, 830, 680
-    draw.rounded_rectangle([(m_left, m_top), (m_right, m_bottom)], radius=36, outline=(255, 255, 255, 220), width=24)
-    draw.rectangle([(505, 680), (585, 750)], fill=(255, 255, 255, 200))
-    draw.rounded_rectangle([(430, 740), (660, 765)], radius=12, fill=(255, 255, 255, 220))
+        # Mac monitor illustration
+        m_left, m_top, m_right, m_bottom = 260, 270, 830, 680
+        draw.rounded_rectangle([(m_left, m_top), (m_right, m_bottom)], radius=36, outline=(255, 255, 255, 220), width=24)
+        draw.rectangle([(505, 680), (585, 750)], fill=(255, 255, 255, 200))
+        draw.rounded_rectangle([(430, 740), (660, 765)], radius=12, fill=(255, 255, 255, 220))
 
-    # Phone illustration
-    p_left, p_top, p_right, p_bottom = 170, 350, 440, 830
-    draw.rounded_rectangle([(p_left - 10, p_top - 10), (p_right + 10, p_bottom + 10)], radius=48, fill=(15, 23, 42, 240))
-    draw.rounded_rectangle([(p_left, p_top), (p_right, p_bottom)], radius=42, fill=(30, 41, 59, 255), outline=(56, 189, 248, 255), width=18)
-    draw.rounded_rectangle([(p_left + 20, p_top + 45), (p_right - 20, p_bottom - 45)], radius=24, fill=(14, 165, 233, 230))
-    draw.rounded_rectangle([(p_left + 90, p_bottom - 24), (p_right - 90, p_bottom - 14)], radius=5, fill=(255, 255, 255, 200))
+        # Phone illustration
+        p_left, p_top, p_right, p_bottom = 170, 350, 440, 830
+        draw.rounded_rectangle([(p_left - 10, p_top - 10), (p_right + 10, p_bottom + 10)], radius=48, fill=(15, 23, 42, 240))
+        draw.rounded_rectangle([(p_left, p_top), (p_right, p_bottom)], radius=42, fill=(30, 41, 59, 255), outline=(56, 189, 248, 255), width=18)
+        draw.rounded_rectangle([(p_left + 20, p_top + 45), (p_right - 20, p_bottom - 45)], radius=24, fill=(14, 165, 233, 230))
+        draw.rounded_rectangle([(p_left + 90, p_bottom - 24), (p_right - 90, p_bottom - 14)], radius=5, fill=(255, 255, 255, 200))
 
-    # Wi-Fi waves
-    draw.arc([(490, 360), (670, 540)], start=200, end=340, fill=(255, 255, 255, 240), width=18)
-    draw.arc([(440, 310), (720, 590)], start=200, end=340, fill=(255, 255, 255, 240), width=18)
-    draw.ellipse([(568, 480), (592, 504)], fill=(255, 255, 255, 255))
+        # Wi-Fi waves
+        draw.arc([(490, 360), (670, 540)], start=200, end=340, fill=(255, 255, 255, 240), width=18)
+        draw.arc([(440, 310), (720, 590)], start=200, end=340, fill=(255, 255, 255, 240), width=18)
+        draw.ellipse([(568, 480), (592, 504)], fill=(255, 255, 255, 255))
 
-    sizes = [
-        (16, "icon_16x16.png"), (32, "icon_16x16@2x.png"),
-        (32, "icon_32x32.png"), (64, "icon_32x32@2x.png"),
-        (128, "icon_128x128.png"), (256, "icon_128x128@2x.png"),
-        (256, "icon_256x256.png"), (512, "icon_256x256@2x.png"),
-        (512, "icon_512x512.png"), (1024, "icon_512x512@2x.png"),
-    ]
-    for s, name in sizes:
-        resized = img.resize((s, s), Image.Resampling.LANCZOS)
-        resized.save(iconset_dir / name)
+        sizes = [
+            (16, "icon_16x16.png"), (32, "icon_16x16@2x.png"),
+            (32, "icon_32x32.png"), (64, "icon_32x32@2x.png"),
+            (128, "icon_128x128.png"), (256, "icon_128x128@2x.png"),
+            (256, "icon_256x256.png"), (512, "icon_256x256@2x.png"),
+            (512, "icon_512x512.png"), (1024, "icon_512x512@2x.png"),
+        ]
+        for s, name in sizes:
+            resized = img.resize((s, s), Image.Resampling.LANCZOS)
+            resized.save(iconset_dir / name)
 
-    img.resize((256, 256), Image.Resampling.LANCZOS).save(RESOURCES_DIR / "scrcpy.png")
-    img.resize((256, 256), Image.Resampling.LANCZOS).save(RESOURCES_DIR / "disconnected.png")
+        img.resize((256, 256), Image.Resampling.LANCZOS).save(RESOURCES_DIR / "scrcpy.png")
+        img.resize((256, 256), Image.Resampling.LANCZOS).save(RESOURCES_DIR / "disconnected.png")
 
-    icns_path = RESOURCES_DIR / "AppIcon.icns"
-    subprocess.run(["iconutil", "-c", "icns", str(iconset_dir), "-o", str(icns_path)], check=True)
-    shutil.rmtree(iconset_dir, ignore_errors=True)
+        icns_path = RESOURCES_DIR / "AppIcon.icns"
+        subprocess.run(["iconutil", "-c", "icns", str(iconset_dir), "-o", str(icns_path)], check=True)
     print("✓ Created custom high-res AppIcon.icns.")
 
 def create_info_plist():
@@ -108,6 +108,27 @@ def create_info_plist():
     (CONTENTS_DIR / "Info.plist").write_text(plist_content, encoding="utf-8")
     print("✓ Created Info.plist.")
 
+def find_scrcpy_binary() -> str:
+    """Locate scrcpy executable on Apple Silicon or Intel Macs."""
+    found = shutil.which("scrcpy")
+    if found:
+        return found
+    for p in ["/opt/homebrew/bin/scrcpy", "/usr/local/bin/scrcpy"]:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    raise FileNotFoundError("scrcpy binary not found. Please install via: brew install scrcpy")
+
+def find_scrcpy_server() -> str | None:
+    """Locate scrcpy-server jar on Apple Silicon or Intel Macs."""
+    candidates = [
+        "/opt/homebrew/share/scrcpy/scrcpy-server",
+        "/usr/local/share/scrcpy/scrcpy-server",
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    return None
+
 def create_executables():
     MACOS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -117,7 +138,12 @@ def create_executables():
         shutil.copy2(env_source, RESOURCES_DIR / ".env")
         shutil.copy2(env_source, Path.home() / ".android_cast.env")
 
-    scrcpy_source = "/opt/homebrew/bin/scrcpy"
+    # Embed scrcpy-server into Resources if present
+    server_path = find_scrcpy_server()
+    if server_path:
+        shutil.copy2(server_path, RESOURCES_DIR / "scrcpy-server")
+
+    scrcpy_source = find_scrcpy_binary()
     engine_dest = MACOS_DIR / "AndroidCastEngine"
     shutil.copy2(scrcpy_source, engine_dest)
     engine_dest.chmod(0o755)
@@ -127,8 +153,15 @@ DIR="$( cd "$( dirname "${{BASH_SOURCE[0]}}" )" && pwd )"
 RESOURCES_DIR="$DIR/../Resources"
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-export SCRCPY_SERVER_PATH="/opt/homebrew/share/scrcpy/scrcpy-server"
 export SCRCPY_ICON_DIR="$RESOURCES_DIR"
+
+if [ -f "$RESOURCES_DIR/scrcpy-server" ]; then
+    export SCRCPY_SERVER_PATH="$RESOURCES_DIR/scrcpy-server"
+elif [ -f "/opt/homebrew/share/scrcpy/scrcpy-server" ]; then
+    export SCRCPY_SERVER_PATH="/opt/homebrew/share/scrcpy/scrcpy-server"
+elif [ -f "/usr/local/share/scrcpy/scrcpy-server" ]; then
+    export SCRCPY_SERVER_PATH="/usr/local/share/scrcpy/scrcpy-server"
+fi
 
 get_device() {{
     adb devices | grep -E '(\\bdevice\\b)' | grep -v 'List of' | head -n 1 | awk '{{print $1}}'
@@ -187,9 +220,6 @@ fi
 
 IS_LOCKED=$(adb -s "$DEVICE" shell dumpsys trust 2>/dev/null | grep -E "deviceLocked=1|deviceLocked=true")
 if [ -n "$IS_LOCKED" ] && [ -n "$ANDROID_PIN" ]; then
-    adb -s "$DEVICE" shell input keyevent 224
-    sleep 0.7
-
     # Dynamic swipe coordinates for any Android screen resolution
     SIZE=$(adb -s "$DEVICE" shell wm size 2>/dev/null | grep -oE '[0-9]+x[0-9]+' | head -n 1)
     WIDTH="${{SIZE%x*}}"
@@ -200,12 +230,8 @@ if [ -n "$IS_LOCKED" ] && [ -n "$ANDROID_PIN" ]; then
     SWIPE_Y1=$((HEIGHT * 3 / 4))
     SWIPE_Y2=$((HEIGHT / 3))
 
-    adb -s "$DEVICE" shell input swipe "$SWIPE_X" "$SWIPE_Y1" "$SWIPE_X" "$SWIPE_Y2" 250
-    sleep 0.7
-    adb -s "$DEVICE" shell input text "$ANDROID_PIN"
-    sleep 0.2
-    adb -s "$DEVICE" shell input keyevent 66
-    sleep 0.5
+    adb -s "$DEVICE" shell "input keyevent 224 && sleep 0.7 && input swipe $SWIPE_X $SWIPE_Y1 $SWIPE_X $SWIPE_Y2 250 && sleep 0.7 && input text \"$ANDROID_PIN\" && sleep 0.2 && input keyevent 66"
+    sleep 0.4
 fi
 
 # High-Efficiency Launcher:

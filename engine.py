@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import functools
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 from config import StreamConfig, PROFILES, DEFAULT_PROFILE
-from device import find_adb, get_preferred_wireless_device
 
 COMMON_SCRCPY_PATHS = [
     "/opt/homebrew/bin/scrcpy",
     "/usr/local/bin/scrcpy",
 ]
 
+@functools.lru_cache(maxsize=1)
 def find_scrcpy() -> str | None:
+    """Find and cache the scrcpy executable on macOS."""
     found = shutil.which("scrcpy")
     if found:
         return found
@@ -85,22 +87,14 @@ def launch_stream(
 
     # Allow runtime overrides if requested
     config = base_config
-    if override_control is not None or override_screen_off is not None:
-        config = StreamConfig(
-            name=base_config.name,
-            description=base_config.description,
-            video_codec=base_config.video_codec,
-            bit_rate=base_config.bit_rate,
-            max_size=base_config.max_size,
-            max_fps=base_config.max_fps,
-            video_buffer_ms=base_config.video_buffer_ms,
-            turn_screen_off=override_screen_off if override_screen_off is not None else base_config.turn_screen_off,
-            power_off_on_close=base_config.power_off_on_close,
-            stay_awake=base_config.stay_awake,
-            control=override_control if override_control is not None else base_config.control,
-            audio=base_config.audio,
-            render_driver=base_config.render_driver,
-        )
+    overrides: dict[str, bool] = {}
+    if override_control is not None:
+        overrides["control"] = override_control
+    if override_screen_off is not None:
+        overrides["turn_screen_off"] = override_screen_off
+    if overrides:
+        from dataclasses import replace
+        config = replace(base_config, **overrides)
 
     cmd = build_scrcpy_command(device_serial, config, scrcpy_bin=scrcpy_path)
     

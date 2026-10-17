@@ -1,21 +1,20 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Literal
 
 def load_env(env_path: Path | None = None) -> None:
-    """Loads environment variables from a .env file."""
-    if env_path is None:
-        # Check current project directory and user home
-        candidates = [
+    """Loads environment variables from a .env file into os.environ."""
+    candidates = (
+        [env_path]
+        if env_path is not None
+        else [
             Path(__file__).parent / ".env",
             Path.home() / ".android_cast.env",
             Path.home() / ".env",
         ]
-    else:
-        candidates = [env_path]
+    )
 
     for p in candidates:
         if p.is_file():

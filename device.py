@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import os
 import shutil
 import subprocess
@@ -12,8 +13,9 @@ COMMON_SEARCH_PATHS = [
     Path.home() / "Library/Android/sdk/platform-tools/adb",
 ]
 
+@functools.lru_cache(maxsize=1)
 def find_adb() -> str | None:
-    """Find the adb executable on macOS."""
+    """Find and cache the adb executable on macOS."""
     found = shutil.which("adb")
     if found:
         return found
@@ -87,8 +89,9 @@ def is_device_locked(device_serial: str, adb_bin: str | None = None) -> bool:
     except Exception:
         return False
 
+@functools.lru_cache(maxsize=4)
 def get_screen_size(device_serial: str, adb_bin: str | None = None) -> tuple[int, int]:
-    """Get the physical screen resolution of the Android device."""
+    """Get the physical screen resolution of the Android device (cached per device)."""
     adb_path = adb_bin or find_adb()
     if adb_path:
         try:
@@ -107,7 +110,7 @@ def get_screen_size(device_serial: str, adb_bin: str | None = None) -> tuple[int
 
 def unlock_device(device_serial: str, pin: str, adb_bin: str | None = None) -> bool:
     """
-    Automatically unlock the Android device using ADB:
+    Atomically unlock the Android device in a single ADB shell execution:
     1. Wakes up the screen (224 / KEYCODE_WAKEUP)
     2. Swipes up dynamically based on screen resolution to reveal PIN keypad
     3. Types the PIN or password
@@ -117,30 +120,29 @@ def unlock_device(device_serial: str, pin: str, adb_bin: str | None = None) -> b
     if not adb_path or not pin:
         return False
     try:
-        # 1. Wake screen
-        subprocess.run([adb_path, "-s", device_serial, "shell", "input", "keyevent", "224"], timeout=3)
-        time.sleep(0.7)
-
-        # 2. Dynamic swipe up to reveal PIN keypad on any screen resolution
         width, height = get_screen_size(device_serial, adb_path)
         center_x = width // 2
         start_y = int(height * 0.75)
         end_y = int(height * 0.35)
-        subprocess.run(
-            [adb_path, "-s", device_serial, "shell", "input", "swipe", str(center_x), str(start_y), str(center_x), str(end_y), "250"],
-            timeout=3,
+        safe_pin = pin.replace("\\", "\\\\").replace('"', '\\"')
+
+        compound_cmd = (
+            f"input keyevent 224 && "
+            f"sleep 0.7 && "
+            f"input swipe {center_x} {start_y} {center_x} {end_y} 250 && "
+            f"sleep 0.7 && "
+            f'input text "{safe_pin}" && '
+            f"sleep 0.2 && "
+            f"input keyevent 66"
         )
-        time.sleep(0.7)
 
-        # 3. Enter PIN/password
-        safe_pin = pin.replace('"', '\\"')
-        subprocess.run([adb_path, "-s", device_serial, "shell", "input", "text", safe_pin], timeout=3)
-        time.sleep(0.2)
-
-        # 4. Press Enter
-        subprocess.run([adb_path, "-s", device_serial, "shell", "input", "keyevent", "66"], timeout=3)
-        time.sleep(0.5)
-        return True
+        res = subprocess.run(
+            [adb_path, "-s", device_serial, "shell", compound_cmd],
+            timeout=8,
+            capture_output=True,
+            text=True,
+        )
+        return res.returncode == 0
     except Exception as e:
         print(f"⚠️ Failed to unlock device: {e}")
         return False
