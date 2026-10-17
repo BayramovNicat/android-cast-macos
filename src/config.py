@@ -10,6 +10,7 @@ def load_env(env_path: Path | None = None) -> None:
         [env_path]
         if env_path is not None
         else [
+            Path(__file__).resolve().parent.parent / ".env",
             Path(__file__).parent / ".env",
             Path.home() / ".android_cast.env",
             Path.home() / ".env",

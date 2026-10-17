@@ -3,6 +3,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
+
+# Ensure src modules are resolvable
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from config import PROFILES, DEFAULT_PROFILE, get_android_pin
 from device import (
     get_preferred_wireless_device,

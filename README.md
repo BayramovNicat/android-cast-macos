@@ -50,7 +50,8 @@ On your Android phone:
 
 2. **Build and Install macOS App**:
    ```bash
-   python3 build_app.py
+   python3 scripts/build_app.py
+   # or: npm run build
    ```
    This generates and installs `Android Cast.app` directly into `/Applications`.
 
@@ -101,12 +102,13 @@ npm run check            # Verify Python syntax
 ---
 
 ## 📁 Project Architecture
-
-- **[`main.py`](main.py)** - CLI entrypoint and interactive mode selection.
-- **[`device.py`](device.py)** - Wireless device discovery, lock detection, and ADB unlock logic.
-- **[`engine.py`](engine.py)** - Constructs optimized `scrcpy` arguments and manages the streaming process.
-- **[`config.py`](config.py)** - Streaming profiles (Battery, Balanced, Performance) and `.env` loader.
-- **[`build_app.py`](build_app.py)** - Automates bundling, icon generation, code-signing, and installation to `/Applications`.
-- **[`launcher.sh`](launcher.sh)** - Standalone shell launcher bundled into `Android Cast.app`.
-- **[`cast.sh`](cast.sh)** - Convenient terminal wrapper for `./main.py`.
+ 
+- **[`src/main.py`](src/main.py)** - CLI entrypoint and interactive mode selection.
+- **[`src/device.py`](src/device.py)** - Wireless device discovery, lock detection, and ADB unlock logic.
+- **[`src/engine.py`](src/engine.py)** - Constructs optimized `scrcpy` arguments and manages the streaming process.
+- **[`src/config.py`](src/config.py)** - Streaming profiles (Battery, Balanced, Performance) and `.env` loader.
+- **[`assets/`](assets/)** - Pre-rendered macOS high-resolution `AppIcon.icns` and UI PNG assets.
+- **[`scripts/build_app.py`](scripts/build_app.py)** - Automates bundling, asset copying, Info.plist generation, and installation to `/Applications`.
+- **[`scripts/launcher.sh`](scripts/launcher.sh)** - Standalone shell launcher bundled into `Android Cast.app`.
+- **[`cast.sh`](cast.sh)** - Convenient terminal wrapper for `src/main.py`.
 - **[`.env`](.env) / [`.env.example`](.env.example)** - Local configuration for your Android credentials.

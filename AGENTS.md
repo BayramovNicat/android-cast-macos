@@ -15,13 +15,14 @@ This document provides architecture context, design decisions, and strict guidel
 
 ## ⚙️ Architecture & File Responsibilities
 
-- **[`main.py`](main.py)**: CLI entrypoint, argument parsing (`--battery`, `--performance`, `--pin`, etc.), and interactive menu.
-- **[`device.py`](device.py)**: ADB device discovery, lock detection (`dumpsys trust`), dynamic resolution calculation (`wm size`), and lockscreen unlock logic.
-- **[`engine.py`](engine.py)**: Constructs optimized `scrcpy` arguments and manages the streaming subprocess.
-- **[`config.py`](config.py)**: Streaming profile definitions (Battery Saver, Balanced, Ultra Performance) and `.env` loader.
-- **[`build_app.py`](build_app.py)**: Generates high-res macOS `.icns` icons, bundles `Android Cast.app`, code-signs with ad-hoc identity, and installs to `/Applications`.
-- **[`launcher.sh`](launcher.sh)**: Standalone shell script bundled into the application to launch scrcpy with auto-unlock.
-- **[`cast.sh`](cast.sh)**: Shell wrapper to invoke `main.py` directly from the terminal.
+- **[`src/main.py`](src/main.py)**: CLI entrypoint, argument parsing (`--battery`, `--performance`, `--pin`, etc.), and interactive menu.
+- **[`src/device.py`](src/device.py)**: ADB device discovery, lock detection (`dumpsys trust`), dynamic resolution calculation (`wm size`), and lockscreen unlock logic.
+- **[`src/engine.py`](src/engine.py)**: Constructs optimized `scrcpy` arguments and manages the streaming subprocess.
+- **[`src/config.py`](src/config.py)**: Streaming profile definitions (Battery Saver, Balanced, Ultra Performance) and `.env` loader.
+- **[`assets/`](assets/)**: Pre-rendered macOS high-res `AppIcon.icns` and PNG UI assets (zero external dependencies).
+- **[`scripts/build_app.py`](scripts/build_app.py)**: Bundles `Android Cast.app`, copies assets, generates Info.plist, code-signs with ad-hoc identity, and installs to `/Applications`.
+- **[`scripts/launcher.sh`](scripts/launcher.sh)**: Standalone shell script bundled into the application to launch scrcpy with auto-unlock.
+- **[`cast.sh`](cast.sh)**: Shell wrapper to invoke `src/main.py` directly from the terminal.
 - **[`.env`](.env) / [`.env.example`](.env.example)**: Stores local credentials (`ANDROID_PIN`). `.env` is git-ignored.
 
 ---
@@ -54,11 +55,11 @@ Before concluding any task, verify your changes with these commands:
 ```bash
 # 1. Verify Python syntax on system Python
 npm run check
-# or: python3 -m py_compile main.py config.py device.py engine.py build_app.py
+# or: python3 -m py_compile src/*.py scripts/*.py
 
 # 2. Rebuild and install macOS app bundle if build_app.py was modified
 npm run build
-# or: python3 build_app.py
+# or: python3 scripts/build_app.py
 
 # 3. Verify launcher shell syntax
 bash -n "/Applications/Android Cast.app/Contents/MacOS/Android Cast"
