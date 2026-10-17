@@ -1,29 +1,13 @@
 from __future__ import annotations
 
-import functools
-import os
-import shutil
+from dataclasses import replace
 import subprocess
-import sys
-from pathlib import Path
 from config import StreamConfig, PROFILES, DEFAULT_PROFILE
+from device import find_binary
 
-COMMON_SCRCPY_PATHS = [
-    "/opt/homebrew/bin/scrcpy",
-    "/usr/local/bin/scrcpy",
-]
-
-@functools.lru_cache(maxsize=1)
 def find_scrcpy() -> str | None:
     """Find and cache the scrcpy executable on macOS."""
-    found = shutil.which("scrcpy")
-    if found:
-        return found
-    for p in COMMON_SCRCPY_PATHS:
-        path_obj = Path(p)
-        if path_obj.is_file() and os.access(path_obj, os.X_OK):
-            return str(path_obj)
-    return None
+    return find_binary("scrcpy")
 
 def build_scrcpy_command(
     device_serial: str,
@@ -55,20 +39,19 @@ def build_scrcpy_command(
     if config.control:
         if config.stay_awake:
             cmd.append("--stay-awake")
+        if config.turn_screen_off:
+            cmd.append("--turn-screen-off")
+        if config.power_off_on_close:
+            cmd.append("--power-off-on-close")
     else:
         cmd.append("--no-control")
 
-    # Battery saving features
-    if config.turn_screen_off and config.control:
-        cmd.append("--turn-screen-off")
-
-    if config.power_off_on_close and config.control:
-        cmd.append("--power-off-on-close")
-
     # Audio forwarding
     if config.audio:
-        cmd.append(f"--audio-codec={config.audio_codec}")
-        cmd.append(f"--audio-bit-rate={config.audio_bit_rate}")
+        cmd.extend([
+            f"--audio-codec={config.audio_codec}",
+            f"--audio-bit-rate={config.audio_bit_rate}",
+        ])
     else:
         cmd.append("--no-audio")
 
@@ -89,8 +72,7 @@ def launch_stream(
 
     base_config = PROFILES.get(profile_name, PROFILES[DEFAULT_PROFILE])
 
-    # Allow runtime overrides if requested
-    config = base_config
+    # Apply any explicit command-line overrides
     overrides: dict[str, bool] = {}
     if override_control is not None:
         overrides["control"] = override_control
@@ -98,17 +80,15 @@ def launch_stream(
         overrides["turn_screen_off"] = override_screen_off
     if override_audio is not None:
         overrides["audio"] = override_audio
-    if overrides:
-        from dataclasses import replace
-        config = replace(base_config, **overrides)
 
+    config = replace(base_config, **overrides) if overrides else base_config
     cmd = build_scrcpy_command(device_serial, config, scrcpy_bin=scrcpy_path)
-    
+
     print(f"\n🚀 Launching Android Cast [{config.name}]")
     print(f"📱 Target Device : {device_serial}")
     print(f"🔊 Audio Forward : {'Enabled (' + config.audio_codec.upper() + ' ' + config.audio_bit_rate + ')' if config.audio else 'Disabled'}")
-    print(f"🔋 Screen-Off    : {'Enabled (~70% battery savings)' if config.turn_screen_off else 'Disabled'}")
-    print(f"🎮 Interaction   : {'Full Control (Clicking & Typing)' if config.control else 'View-Only'}")
+    print(f"🔋 Screen-Off    : {'Enabled (~75% battery savings)' if config.turn_screen_off else 'Disabled'}")
+    print(f"🎮 Interaction   : {'Full Control (Touch & Type)' if config.control else 'View-Only'}")
     print(f"🖥️ Render Driver : Apple Metal (Hardware VSync)")
     print("-" * 55)
 
@@ -117,6 +97,7 @@ def launch_stream(
         return proc.returncode
     except KeyboardInterrupt:
         return 0
-    except Exception as e:
+    except OSError as e:
         print(f"❌ Error running stream: {e}")
         return 1
+

@@ -26,11 +26,9 @@ def load_env(env_path: Path | None = None) -> None:
                         continue
                     if "=" in line:
                         key, val = line.split("=", 1)
-                        key = key.strip()
-                        val = val.strip().strip('"').strip("'")
-                        os.environ.setdefault(key, val)
+                        os.environ.setdefault(key.strip(), val.strip().strip('"\''))
                 break
-            except Exception:
+            except OSError:
                 pass
 
 def get_android_pin() -> str | None:
@@ -43,73 +41,45 @@ def get_android_pin() -> str | None:
 class StreamConfig:
     name: str
     description: str
-    video_codec: str
-    bit_rate: str
-    max_size: int | None
-    max_fps: int | None
-    video_buffer_ms: int
-    turn_screen_off: bool
-    power_off_on_close: bool
-    stay_awake: bool
-    control: bool
-    audio: bool
-    render_driver: str
+    bit_rate: str = "4M"
+    max_size: int | None = 1200
+    max_fps: int | None = None
+    video_buffer_ms: int = 20
+    turn_screen_off: bool = True
+    power_off_on_close: bool = True
+    stay_awake: bool = True
+    control: bool = True
+    audio: bool = True
+    render_driver: str = "metal"
+    video_codec: str = "h265"
     audio_codec: str = "opus"
     audio_bit_rate: str = "128K"
 
-# Pre-tuned profiles optimized for Android and Mac
+
 PROFILES: dict[str, StreamConfig] = {
     "battery": StreamConfig(
         name="Battery Saver",
-        description="Physical phone screen turned OFF, hardware H.265, 60 FPS, Opus audio, lowest battery draw (~70% savings)",
-        video_codec="h265",
+        description="Physical phone screen OFF, 60 FPS, 2.5 Mbps (~75% phone power savings)",
         bit_rate="2.5M",
-        max_size=1200,
         max_fps=60,
         video_buffer_ms=30,
-        turn_screen_off=True,
-        power_off_on_close=True,
-        stay_awake=True,
-        control=True,
-        audio=True,
-        render_driver="metal",
-        audio_codec="opus",
-        audio_bit_rate="128K",
     ),
     "balanced": StreamConfig(
         name="Balanced (Default)",
-        description="Smooth 90 Hz native display, hardware H.265, Metal VSync, phone screen off, low-latency Opus audio",
-        video_codec="h265",
+        description="Native refresh rate (up to 90/120Hz), 4 Mbps, screen OFF, Metal VSync",
         bit_rate="4M",
-        max_size=1200,
-        max_fps=None,  # Native 90 Hz
         video_buffer_ms=20,
-        turn_screen_off=True,
-        power_off_on_close=True,
-        stay_awake=True,
-        control=True,
-        audio=True,
-        render_driver="metal",
-        audio_codec="opus",
-        audio_bit_rate="128K",
     ),
     "performance": StreamConfig(
         name="Ultra Performance",
-        description="Uncapped 90 Hz, high bitrate, Opus audio, phone screen stays illuminated",
-        video_codec="h265",
+        description="High bitrate (6 Mbps), phone screen stays lit, minimal buffer",
         bit_rate="6M",
         max_size=1600,
-        max_fps=None,
         video_buffer_ms=15,
         turn_screen_off=False,
         power_off_on_close=False,
-        stay_awake=True,
-        control=True,
-        audio=True,
-        render_driver="metal",
-        audio_codec="opus",
-        audio_bit_rate="128K",
     ),
 }
 
 DEFAULT_PROFILE = "balanced"
+
